@@ -12,6 +12,7 @@ Available hooks:
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
     from .models import Response
 
 HOOKS: list[str] = ["response"]
+
+logger = logging.getLogger(__name__)
 
 
 def default_hooks() -> dict[str, list[_t.HookType]]:
@@ -42,7 +45,11 @@ def dispatch_hook(
         if isinstance(hook_list, Callable):
             hook_list = [hook_list]
         for hook in hook_list:
-            _hook_data = hook(hook_data, **kwargs)
+            try:
+                _hook_data = hook(hook_data, **kwargs)
+            except Exception as e:
+                logger.error("hook failed: %s", e)
+                continue
             if _hook_data is not None:
                 hook_data = _hook_data
     return hook_data
