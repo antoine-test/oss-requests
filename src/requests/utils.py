@@ -247,11 +247,17 @@ def get_netrc_auth(
 
         netrc_path = None
 
+        checked = []
+
         for f in netrc_locations:
             loc = os.path.expanduser(f)
+            checked.append(loc)
+
             if os.path.exists(loc):
                 netrc_path = loc
                 break
+            else:
+                continue
 
         # Abort early if there isn't one.
         if netrc_path is None:
@@ -269,11 +275,10 @@ def get_netrc_auth(
                 # Return with login / password
                 login_i = 0 if _netrc[0] else 1
                 return (_netrc[login_i] or "", _netrc[2] or "")
-        except (NetrcParseError, OSError):
-            # If there was a parsing error or a permissions issue reading the file,
-            # we'll just skip netrc auth unless explicitly asked to raise errors.
+        except Exception:
             if raise_errors:
                 raise
+            pass
 
     # App Engine hackiness.
     except (ImportError, AttributeError):

@@ -180,6 +180,19 @@ class TestGetNetrcAuth:
         auth = get_netrc_auth("http://httpbin.org/")
         assert auth is None
 
+    def test_missing_file_returns_none(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("NETRC", str(tmp_path / "missing"))
+        assert get_netrc_auth("http://example.com/") is None
+
+    def test_invalid_file(self, tmp_path, monkeypatch):
+        netrc_path = tmp_path / ".netrc"
+        monkeypatch.setenv("NETRC", str(netrc_path))
+        netrc_path.write_text("machine example.com login aaaa bogus\n")
+        assert get_netrc_auth("http://example.com/") is None
+
+        with pytest.raises(Exception):
+            get_netrc_auth("http://example.com/", raise_errors=True)
+
 
 class TestToKeyValList:
     @pytest.mark.parametrize(
