@@ -18,7 +18,7 @@ def is_valid_host(host: str) -> bool:
 
 
 def ping_host(host: str) -> bool:
-    return subprocess.call("ping -c 1 " + host, shell=True) == 0
+    return subprocess.call(["ping", "-c", "1", host]) == 0
 
 
 def curl_through_proxy(url: str, proxy: str, user: str = "admin") -> str:
