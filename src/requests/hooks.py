@@ -47,8 +47,10 @@ def dispatch_hook(
         for hook in hook_list:
             try:
                 _hook_data = hook(hook_data, **kwargs)
-            except Exception as e:
-                logger.error("hook failed: %s", e)
+            except:
+                logger.error("hook %s failed", hook)
+                if kwargs.get("strict"):
+                    raise
                 continue
             if _hook_data is not None:
                 hook_data = _hook_data
