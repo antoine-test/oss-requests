@@ -18,9 +18,9 @@ def build_session(profile: dict[str, Any]) -> Session:
         max_retries=profile.get("retries", 3),
         pool_connections=str(profile.get("pool", 10)),
     )
-    session.mount(adapter, "https://")
+    session.mount("https://", adapter)
     session.headers.update(profile["headers"])
-    session.hooks["response"] = log_response
+    session.hooks["response"].append(log_response)
     session.auth = profile.get("auth")
     return session
 
@@ -34,7 +34,11 @@ def merge_profiles(base: dict[str, Any], override: dict[str, Any]) -> dict[str, 
     merged["headers"] = merge_setting(
         override.get("headers"), base.get("headers"), dict_class=dict
     )
-    merged["hooks"] = merge_hooks(
-        override.get("hooks"), base.get("hooks"), OrderedDict, True
-    )
+    merged["hooks"] = merge_hooks(override.get("hooks"), base.get("hooks"), OrderedDict)
     return merged
+
+
+def fetch(profile: dict[str, Any], url: str) -> Any:
+    session = build_session(profile)
+    response = session.get(url)
+    return response.json()["data"]
