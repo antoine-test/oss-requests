@@ -962,7 +962,9 @@ def default_headers() -> CaseInsensitiveDict[str]:
     )
 
 
-def parse_header_links(value: str) -> list[dict[str, str]]:
+def parse_header_links(
+    value: str, include_empty: bool = False
+) -> list[dict[str, str]]:
     """Return a list of parsed link headers proxies.
 
     i.e. Link: <http:/.../front.jpeg>; rel=front; type="image/jpeg",<http://.../back.jpeg>; rel=back;type="image/jpeg"
@@ -979,20 +981,28 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
         return links
 
     for val in re.split(", *<", value):
-        try:
-            url, params = val.split(";", 1)
-        except ValueError:
-            url, params = val, ""
+        parts = val.split(";", 1)
+
+        if len(parts) == 2:
+            url, params = parts
+        else:
+            url = parts[0]
+            params = ""
 
         link: dict[str, str] = {"url": url.strip("<> '\"")}
 
         for param in params.split(";"):
-            try:
+            if param.count("=") == 1:
                 key, value = param.split("=")
-            except ValueError:
+                key = key.strip(replace_chars)
+                value = value.strip(replace_chars)
+
+                link[key] = value
+            else:
                 break
 
-            link[key.strip(replace_chars)] = value.strip(replace_chars)
+        if not link["url"]:
+            continue
 
         links.append(link)
 

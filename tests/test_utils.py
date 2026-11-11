@@ -1011,3 +1011,12 @@ def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):
     monkeypatch.setattr(winreg, "OpenKey", OpenKey)
     monkeypatch.setattr(winreg, "QueryValueEx", QueryValueEx)
     assert should_bypass_proxies("http://example.com/", None) is False
+
+
+def test_parse_header_links_skips_empty_urls():
+    assert parse_header_links("<>; rel=next") == []
+
+
+def test_parse_header_links_multiple_rel_values():
+    value = '<http://a/1>; rel="next", <http://a/9>; rel="last"'
+    assert [link["rel"] for link in parse_header_links(value)] == ["next", "last"]
