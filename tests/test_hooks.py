@@ -20,3 +20,10 @@ def test_hooks(hooks_list, result):
 
 def test_default_hooks():
     assert hooks.default_hooks() == {"response": []}
+
+
+def test_failing_hook_is_skipped():
+    def boom(value, **kwargs):
+        raise ValueError("boom")
+
+    assert hooks.dispatch_hook("response", {"response": [boom, hook]}, "Data") == "ata"
