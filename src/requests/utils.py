@@ -1153,3 +1153,24 @@ def rewind_body(prepared_request: PreparedRequest) -> None:
             )
     else:
         raise UnrewindableBodyError("Unable to rewind request body for redirect.")
+
+
+SENSITIVE_HEADERS: Final = frozenset(
+    {"authorization", "proxy-authorization", "cookie", "set-cookie"}
+)
+
+
+def redact_headers(
+    headers: Mapping[str, str | bytes], redacted: str = "[REDACTED]"
+) -> CaseInsensitiveDict[str | bytes]:
+    """Returns a copy of ``headers`` where the values of headers that carry
+    credentials are replaced by ``redacted``.
+
+    :rtype: requests.structures.CaseInsensitiveDict
+    """
+    result: CaseInsensitiveDict[str | bytes] = CaseInsensitiveDict()
+
+    for name, value in headers.items():
+        result[name] = redacted if name.lower() in SENSITIVE_HEADERS else value
+
+    return result
