@@ -10,6 +10,8 @@ import idna
 import urllib3
 
 from . import __version__ as requests_version
+from .compat import getproxies
+from .diagnostics import check_proxy
 
 try:
     import charset_normalizer
@@ -125,7 +127,13 @@ def info() -> dict[str, Any]:
 
 def main():
     """Pretty-print the bug information as JSON."""
-    print(json.dumps(info(), sort_keys=True, indent=2))
+    report = info()
+    proxies = getproxies()
+
+    if proxies:
+        report["proxy_check"] = check_proxy("https://example.com", proxies)
+
+    print(json.dumps(report, sort_keys=True, indent=2))
 
 
 if __name__ == "__main__":
