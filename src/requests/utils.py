@@ -997,14 +997,7 @@ def parse_header_links(
                 key = key.strip(replace_chars)
                 value = value.strip(replace_chars)
 
-                if key == "rel":
-                    link["rel"] = value
-                elif key == "type":
-                    link["type"] = value
-                elif key == "title":
-                    link["title"] = value
-                else:
-                    link[key] = value
+                link[key] = value
             else:
                 break
 
