@@ -169,6 +169,7 @@ from .__version__ import (
     __version__,
 )
 from .api import delete, get, head, options, patch, post, put, request
+from .downloads import download
 from .exceptions import (
     ConnectionError,
     ConnectTimeout,
@@ -201,6 +202,7 @@ __all__ = (
     "URLRequired",
     "codes",
     "delete",
+    "download",
     "get",
     "head",
     "options",

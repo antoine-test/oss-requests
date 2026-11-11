@@ -4,6 +4,7 @@ Release History
 dev
 ---
 
+- Added `requests.download` to stream a response body to a file atomically.
 - \[Short description of non-trivial change.\]
 
 
