@@ -32,6 +32,7 @@ from requests.utils import (
     parse_dict_header,
     parse_header_links,
     prepend_scheme_if_needed,
+    redact_headers,
     requote_uri,
     select_proxy,
     set_environ,
@@ -1011,3 +1012,17 @@ def test_should_bypass_proxies_win_registry_ProxyOverride_value(monkeypatch):
     monkeypatch.setattr(winreg, "OpenKey", OpenKey)
     monkeypatch.setattr(winreg, "QueryValueEx", QueryValueEx)
     assert should_bypass_proxies("http://example.com/", None) is False
+
+
+@pytest.mark.parametrize(
+    "name", ("Authorization", "authorization", "Proxy-Authorization", "Cookie")
+)
+def test_redact_headers_masks_credentials(name):
+    assert redact_headers({name: "secret"})[name] == "[REDACTED]"
+
+
+def test_redact_headers_keeps_other_headers():
+    headers = CaseInsensitiveDict({"Accept": "*/*", "Authorization": "token"})
+    result = redact_headers(headers)
+    assert result["accept"] == "*/*"
+    assert headers["authorization"] == "token"
