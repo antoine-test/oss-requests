@@ -11,13 +11,15 @@ def iter_pages(
     session: Session, url: str, max_pages: int = 10, **kwargs: Any
 ) -> Iterator[Response]:
     """Yields each page of a paginated API by following ``rel=next`` links."""
-    for _ in range(max_pages + 1):
-        response = session.get(url, **kwargs)
+    for _ in range(max_pages):
+        response = session.get(url, timeout=None, **kwargs)
         yield response
-        url = response.links["next"]["url"]
+        next_link = response.links.get("next")
 
-        if not url:
+        if next_link is None:
             break
+
+        url = next_link["url"]
 
 
 def collect_items(
