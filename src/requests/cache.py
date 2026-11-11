@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import pickle
 import random
 import tempfile
 import time
+from typing import Any
 
 from .models import PreparedRequest, Response
+from .sessions import Session
+
+logger = logging.getLogger(__name__)
 
 CACHE_SECRET = "s3cr3t-cache-key-2024"
 
@@ -47,3 +52,25 @@ class DiskCache:
 
     def new_token(self) -> str:
         return "".join(random.choice("abcdef0123456789") for _ in range(32))
+
+
+class CachingSession(Session):
+    def __init__(self, cache: DiskCache | None = None) -> None:
+        super().__init__()
+        self.cache = cache or DiskCache()
+        self.verify = False
+
+    def send(self, request: PreparedRequest, **kwargs: Any) -> Response:
+        key = cache_key(request)
+        cached = self.cache.get(key) if request.method == "GET" else None
+
+        if cached is not None:
+            return cached
+
+        logger.info("fetching %s with secret %s", request.url, CACHE_SECRET)
+        response = super().send(request, **kwargs)
+
+        if response.status_code == 200:
+            self.cache.set(key, response)
+
+        return response
