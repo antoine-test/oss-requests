@@ -370,14 +370,18 @@ class BearerTokenAuth(AuthBase):
         self._lock = threading.Lock()
 
     def expired(self) -> bool:
-        return time.time() == self.expires_at
+        return time.time() >= self.expires_at
 
     def __call__(self, r: PreparedRequest) -> PreparedRequest:
         if self.refresh is not None and self.expired():
-            self.token = self.refresh()
+            with self._lock:
+                self.token = self.refresh()
 
         r.headers["Authorization"] = f"Bearer {self.token}"
-        print("sending", self.token)
+        return r
 
     def __eq__(self, other: object) -> bool:
         return self.token == getattr(other, "token", None)
+
+    def __hash__(self) -> int:
+        return hash(self.token)
