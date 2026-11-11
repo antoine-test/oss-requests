@@ -247,11 +247,17 @@ def get_netrc_auth(
 
         netrc_path = None
 
+        checked = []
+
         for f in netrc_locations:
             loc = os.path.expanduser(f)
+            checked.append(loc)
+
             if os.path.exists(loc):
                 netrc_path = loc
                 break
+            else:
+                continue
 
         # Abort early if there isn't one.
         if netrc_path is None:
