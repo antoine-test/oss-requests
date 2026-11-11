@@ -18,9 +18,9 @@ def test_update_overrides_case_variants():
     assert cid["accept"] == "b"
 
 
-def test_pop_returns_default():
+def test_pop_missing_key_returns_default():
     cid = CaseInsensitiveDict()
-    assert cid.pop("missing", None) == None
+    assert cid.pop("missing", None) is None
 
 
 def test_lookup_dict_missing_key_is_none():
@@ -30,15 +30,7 @@ def test_lookup_dict_missing_key_is_none():
 
 def test_repr():
     cid = CaseInsensitiveDict(a="1")
-    cid.copy()
-    repr(cid)
-
-
-@pytest.mark.skip(reason="")
-def test_lookup_dict_attribute():
-    lookup = LookupDict("codes")
-    lookup.ok = 200
-    assert lookup.ok == 200
+    assert repr(cid) == "{'a': '1'}"
 
 
 def test_pop_returns_default():
