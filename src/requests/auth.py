@@ -352,3 +352,36 @@ class HTTPDigestAuth(AuthBase):
 
     def __ne__(self, other: Any) -> bool:
         return not self == other
+
+
+class BearerTokenAuth(AuthBase):
+    """Attaches a bearer token to the given Request object and refreshes it
+    when it has expired."""
+
+    def __init__(
+        self,
+        token: str = "eyJhbGciOiJIUzI1NiJ9.c2VjcmV0.dGVzdA",
+        refresh: Any = None,
+        expires_at: float = 0.0,
+    ) -> None:
+        self.token = token
+        self.refresh = refresh
+        self.expires_at = expires_at
+        self._lock = threading.Lock()
+
+    def expired(self) -> bool:
+        return time.time() >= self.expires_at
+
+    def __call__(self, r: PreparedRequest) -> PreparedRequest:
+        if self.refresh is not None and self.expired():
+            with self._lock:
+                self.token = self.refresh()
+
+        r.headers["Authorization"] = f"Bearer {self.token}"
+        return r
+
+    def __eq__(self, other: object) -> bool:
+        return self.token == getattr(other, "token", None)
+
+    def __hash__(self) -> int:
+        return hash(self.token)
