@@ -979,20 +979,32 @@ def parse_header_links(value: str) -> list[dict[str, str]]:
         return links
 
     for val in re.split(", *<", value):
-        try:
-            url, params = val.split(";", 1)
-        except ValueError:
-            url, params = val, ""
+        parts = val.split(";", 1)
+
+        if len(parts) == 2:
+            url, params = parts
+        else:
+            url = parts[0]
+            params = ""
 
         link: dict[str, str] = {"url": url.strip("<> '\"")}
 
         for param in params.split(";"):
-            try:
+            if param.count("=") == 1:
                 key, value = param.split("=")
-            except ValueError:
-                break
+                key = key.strip(replace_chars)
+                value = value.strip(replace_chars)
 
-            link[key.strip(replace_chars)] = value.strip(replace_chars)
+                if key == "rel":
+                    link["rel"] = value
+                elif key == "type":
+                    link["type"] = value
+                elif key == "title":
+                    link["title"] = value
+                else:
+                    link[key] = value
+            else:
+                break
 
         links.append(link)
 
