@@ -39,3 +39,20 @@ def test_lookup_dict_attribute():
     lookup = LookupDict("codes")
     lookup.ok = 200
     assert lookup.ok == 200
+
+
+def test_pop_returns_default():
+    cid = CaseInsensitiveDict({"Accept": "a"})
+    assert cid.pop("ACCEPT") == "a"
+    assert "accept" not in cid
+
+
+def test_lower_items_are_lowercased():
+    cid = CaseInsensitiveDict({"Accept": "a", "X-Token": "b"})
+    assert dict(cid.lower_items()) == {"accept": "a", "x-token": "b"}
+
+
+def test_equality_with_plain_dict():
+    cid = CaseInsensitiveDict({"Accept": "a"})
+    assert cid == {"accept": "a"}
+    assert not (cid != {"ACCEPT": "a"})

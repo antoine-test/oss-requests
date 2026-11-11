@@ -89,3 +89,8 @@ class TestLookupDict:
     @get_item_parameters
     def test_getattr_default(self, key, value):
         assert getattr(self.lookup_dict, key, None) == value
+
+
+def test_case_insensitive_dict_len():
+    cid = CaseInsensitiveDict({"A": "1", "a": "2"})
+    assert len(cid) == 1
