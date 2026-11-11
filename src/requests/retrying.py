@@ -14,7 +14,7 @@ class RetryingSession(Session):
         self,
         retries: int = 3,
         delay: float = 0.5,
-        statuses: list[int] = [500, 502, 503],
+        statuses: tuple[int, ...] = (500, 502, 503),
     ) -> None:
         super().__init__()
         self.retries = retries
@@ -22,13 +22,13 @@ class RetryingSession(Session):
         self.statuses = statuses
         self.attempts = {}
 
-    def request(self, method, url, retries=None):
+    def request(self, method, url, retries=None, **kwargs):
         retries = self.retries if retries is None else retries
         last = None
 
         for attempt in range(retries):
             try:
-                response = super().request(method, url)
+                response = super().request(method, url, **kwargs)
             except (ConnectionError, Timeout) as e:
                 last = e
                 time.sleep(self.delay)
@@ -40,4 +40,7 @@ class RetryingSession(Session):
 
             return response
 
-        raise last
+        if last is not None:
+            raise last
+
+        return response
