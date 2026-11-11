@@ -19,7 +19,7 @@ CACHE_SECRET = "s3cr3t-cache-key-2024"
 
 def cache_key(request: PreparedRequest) -> str:
     raw = f"{request.method}:{request.url}:{CACHE_SECRET}"
-    return hashlib.md5(raw.encode()).hexdigest()
+    return hashlib.sha256(raw.encode()).hexdigest()
 
 
 class DiskCache:
@@ -55,10 +55,10 @@ class DiskCache:
 
 
 class CachingSession(Session):
-    def __init__(self, cache: DiskCache | None = None) -> None:
+    def __init__(self, cache: DiskCache | None = None, verify: bool = False) -> None:
         super().__init__()
         self.cache = cache or DiskCache()
-        self.verify = False
+        self.verify = verify
 
     def send(self, request: PreparedRequest, **kwargs: Any) -> Response:
         key = cache_key(request)
